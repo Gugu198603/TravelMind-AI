@@ -1,4 +1,4 @@
-import type { Message } from '../types/chat'
+import type { Message } from '../types'
 
 export interface StreamChatParams {
   messages: Message[]
@@ -8,7 +8,11 @@ export interface StreamChatParams {
 
 export async function streamChat({ messages, onDelta, signal }: StreamChatParams) {
   const upstreamMessages = messages
-    .filter((m) => (m.role === 'user' || m.role === 'assistant' || m.role === 'system') && m.content)
+    .filter(
+      (m) =>
+        (m.role === 'user' || m.role === 'assistant' || m.role === 'system') &&
+        m.content
+    )
     .map((m) => ({
       role: m.role,
       content: m.content,
@@ -23,7 +27,12 @@ export async function streamChat({ messages, onDelta, signal }: StreamChatParams
 
   if (!res.ok || !res.body) {
     const text = await res.text().catch(() => '')
-    throw new Error(text || `HTTP ${res.status}`)
+    try {
+      const json = JSON.parse(text) as { error?: string; message?: string }
+      throw new Error(json.error || json.message || `HTTP ${res.status}`)
+    } catch {
+      throw new Error(text || `HTTP ${res.status}`)
+    }
   }
 
   const reader = res.body.getReader()
@@ -70,3 +79,4 @@ export async function streamChat({ messages, onDelta, signal }: StreamChatParams
     }
   }
 }
+

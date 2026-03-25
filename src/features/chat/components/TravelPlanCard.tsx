@@ -1,5 +1,5 @@
 import { MapPin, Wallet } from 'lucide-react'
-import type { TravelPlanPayload } from '../types/chat'
+import type { TravelPlanPayload } from '../types'
 
 export interface TravelPlanCardProps {
   plan: TravelPlanPayload
@@ -12,9 +12,7 @@ export function TravelPlanCard({ plan }: TravelPlanCardProps) {
     <div className="w-full rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-white/95">
-            {plan.title}
-          </div>
+          <div className="truncate text-sm font-semibold text-white/95">{plan.title}</div>
           <div className="mt-1 flex items-center gap-2 text-xs text-white/70">
             <Wallet className="h-3.5 w-3.5" />
             <span>预算总计：¥{totalBudget.toLocaleString()}</span>
@@ -35,14 +33,10 @@ export function TravelPlanCard({ plan }: TravelPlanCardProps) {
             {plan.timeline.map((item, idx) => (
               <div key={`${item.time}-${idx}`} className="flex gap-3">
                 <div className="flex w-14 shrink-0 flex-col items-end">
-                  <div className="text-xs font-semibold text-white/90">
-                    {item.time}
-                  </div>
+                  <div className="text-xs font-semibold text-white/90">{item.time}</div>
                 </div>
                 <div className="relative flex-1 rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                  <div className="text-sm font-medium text-white/90">
-                    {item.title}
-                  </div>
+                  <div className="text-sm font-medium text-white/90">{item.title}</div>
                   {(item.location || item.description) && (
                     <div className="mt-1 text-xs text-white/70">
                       {item.location ? `${item.location} · ` : ''}
@@ -87,18 +81,14 @@ export function TravelPlanCard({ plan }: TravelPlanCardProps) {
                 className="rounded-xl border border-white/10 bg-black/20 p-3"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="truncate text-sm font-medium text-white/90">
-                    {s.name}
-                  </div>
+                  <div className="truncate text-sm font-medium text-white/90">{s.name}</div>
                   {s.tag && (
                     <div className="shrink-0 rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] text-white/75">
                       {s.tag}
                     </div>
                   )}
                 </div>
-                {s.description && (
-                  <div className="mt-1 text-xs text-white/70">{s.description}</div>
-                )}
+                {s.description && <div className="mt-1 text-xs text-white/70">{s.description}</div>}
               </div>
             ))}
           </div>
@@ -115,8 +105,7 @@ export function TravelPlanCard({ plan }: TravelPlanCardProps) {
                 </div>
                 {plan.mapPreview.lat != null && plan.mapPreview.lng != null && (
                   <span>
-                    {plan.mapPreview.lat.toFixed(3)},{' '}
-                    {plan.mapPreview.lng.toFixed(3)}
+                    {plan.mapPreview.lat.toFixed(3)}, {plan.mapPreview.lng.toFixed(3)}
                   </span>
                 )}
               </div>

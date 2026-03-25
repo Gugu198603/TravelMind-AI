@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { Message } from '../types/chat'
+import type { Message } from '../types'
 import { MessageBubble } from './MessageBubble'
 
 export interface ChatContainerProps {
@@ -77,3 +77,4 @@ export function ChatContainer({ messages, isLoading }: ChatContainerProps) {
     </div>
   )
 }
+

@@ -1,5 +1,5 @@
-import { Brain, Info, User, Wrench } from 'lucide-react'
-import type { Message } from '../types/chat'
+import { Brain, Info, Wrench } from 'lucide-react'
+import type { Message } from '../types'
 import { TravelPlanCard } from './TravelPlanCard'
 
 export interface MessageBubbleProps {
@@ -26,7 +26,7 @@ function InlineCursor() {
 
 export function MessageBubble({ message, isLatest, isLoading }: MessageBubbleProps) {
   const base =
-    'animate-fade-in max-w-[85%] rounded-2xl border px-4 py-3 text-sm leading-relaxed shadow-sm'
+    'animate-fade-in rounded-2xl border px-4 py-3 text-sm leading-relaxed shadow-sm backdrop-blur-md'
 
   const isUser = message.role === 'user'
   const isSystem = message.role === 'system'
@@ -45,63 +45,41 @@ export function MessageBubble({ message, isLatest, isLoading }: MessageBubblePro
     )
   }
 
-  const align = isUser ? 'justify-end' : 'justify-start'
-  const icon = isUser ? <User className="h-4 w-4" /> : null
-
   const bubbleClass = (() => {
     if (isUser)
-      return `${base} border-sky-300/20 bg-gradient-to-br from-sky-500/30 to-indigo-500/20 text-white/95`
-    if (isThought)
-      return `${base} border-amber-300/15 bg-amber-500/10 text-white/85`
-    if (isTool)
-      return `${base} border-emerald-300/15 bg-emerald-500/10 text-white/85`
-    if (isTravelPlan)
-      return 'animate-fade-in w-full max-w-full'
-    return `${base} border-white/10 bg-white/10 text-white/90`
+      return `${base} rounded-br-md border-sky-300/20 bg-gradient-to-br from-sky-500/35 to-indigo-500/25 text-white/95`
+    if (isThought) return `${base} border-amber-300/15 bg-amber-500/10 text-white/85`
+    if (isTool) return `${base} border-emerald-300/15 bg-emerald-500/10 text-white/85`
+    if (isTravelPlan) return 'animate-fade-in w-full max-w-full'
+    return `${base} rounded-bl-md border-white/10 bg-white/10 text-white/90`
   })()
 
   const headerIcon = (() => {
     if (isThought) return <Brain className="h-4 w-4 text-amber-200/90" />
     if (isTool) return <Wrench className="h-4 w-4 text-emerald-200/90" />
-    if (isUser) return icon
     return null
   })()
 
   const headerLabel = (() => {
     if (isThought) return '思考过程'
     if (isTool) return '工具调用'
-    if (isUser) return '你'
     return 'TravelMind AI'
   })()
 
   const showCursor = Boolean(isLatest && isLoading && !isUser && message.type === 'text')
 
-  return (
-    <div className={`flex w-full ${align}`}>
-      <div className="flex max-w-full flex-col gap-1">
-        {(isThought || isTool) && (
+  if (isThought || isTool) {
+    return (
+      <div className="flex w-full justify-start">
+        <div className="flex max-w-full flex-col gap-1">
           <div className="flex items-center gap-2 px-1 text-xs text-white/65">
             {headerIcon}
             <span>{headerLabel}</span>
           </div>
-        )}
-
-        {isTravelPlan && message.travelPlan ? (
-          <TravelPlanCard plan={message.travelPlan} />
-        ) : (
-          <div className={bubbleClass}>
-            {!isThought && !isTool && (
-              <div className="mb-1 flex items-center gap-2 text-xs text-white/60">
-                {headerIcon}
-                <span>{headerLabel}</span>
-              </div>
-            )}
-
+          <div className={`${bubbleClass} max-w-[78%] sm:max-w-[70%]`}>
             {isTool && message.toolCall ? (
               <div className="space-y-2">
-                <div className="text-xs text-white/80">
-                  {message.toolCall.name}
-                </div>
+                <div className="text-xs text-white/80">{message.toolCall.name}</div>
                 {message.toolCall.args && (
                   <pre className="max-w-full overflow-x-auto rounded-xl border border-white/10 bg-black/30 p-3 text-xs text-white/75">
                     {JSON.stringify(message.toolCall.args, null, 2)}
@@ -114,18 +92,34 @@ export function MessageBubble({ message, isLatest, isLoading }: MessageBubblePro
                 )}
               </div>
             ) : message.content ? (
-              <div className="whitespace-pre-wrap break-words">
-                {message.content}
-                {showCursor && <InlineCursor />}
-              </div>
-            ) : showCursor ? (
-              <div className="flex items-center gap-2 text-white/70">
-                <TypingDots />
-              </div>
+              <div className="whitespace-pre-wrap break-words">{message.content}</div>
             ) : null}
           </div>
-        )}
+        </div>
       </div>
+    )
+  }
+
+  return (
+    <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}>
+      {isTravelPlan && message.travelPlan ? (
+        <div className="max-w-full">
+          <TravelPlanCard plan={message.travelPlan} />
+        </div>
+      ) : (
+        <div className={`${bubbleClass} max-w-[78%] sm:max-w-[70%]`}>
+          {message.content ? (
+            <div className="whitespace-pre-wrap break-words">
+              {message.content}
+              {showCursor && <InlineCursor />}
+            </div>
+          ) : showCursor ? (
+            <div className="flex items-center gap-2 text-white/70">
+              <TypingDots />
+            </div>
+          ) : null}
+        </div>
+      )}
     </div>
   )
 }

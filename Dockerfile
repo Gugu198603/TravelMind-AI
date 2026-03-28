@@ -6,8 +6,8 @@ WORKDIR /app
 RUN npm i -g npm@9
 
 # Install dependencies (including dev)
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json ./
+RUN npm install
 
 # Copy source and build frontend
 COPY . .

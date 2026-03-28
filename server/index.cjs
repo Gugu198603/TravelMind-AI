@@ -9,9 +9,30 @@ require('dotenv').config()
 
 const app = express()
 
+// CORS：支持本地开发与通过环境变量配置的生产域名白名单（逗号分隔）
+function getAllowedOrigins() {
+  const env = process.env.CORS_ORIGIN || ''
+  const list = env
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  // 开发默认允许
+  list.push('http://127.0.0.1:5173', 'http://localhost:5173')
+  return list
+}
+
 app.use(
   cors({
-    origin: ['http://127.0.0.1:5173', 'http://localhost:5173'],
+    origin(origin, cb) {
+      const allowed = getAllowedOrigins()
+      // 无来源（如同源或 curl）默认放行
+      if (!origin) return cb(null, true)
+      if (allowed.includes(origin)) return cb(null, true)
+      // 允许 localhost 任意端口（常见本地调试场景）
+      if (/^http:\/\/localhost:\d+/.test(origin)) return cb(null, true)
+      if (/^http:\/\/127\.0\.0\.1:\d+/.test(origin)) return cb(null, true)
+      return cb(null, false)
+    },
     credentials: true,
   })
 )
@@ -419,6 +440,21 @@ app.post('/api/chat/stream', async (req, res) => {
     clearInterval(pingTimer)
   })
 })
+
+// 生产环境：静态托管前端构建产物，并提供 SPA fallback
+try {
+  const distPath = path.join(__dirname, '..', 'dist')
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath, { maxAge: '1h', index: false }))
+    app.get('*', (req, res, next) => {
+      // 避免覆盖 API 路由
+      if (req.path.startsWith('/api/')) return next()
+      const indexFile = path.join(distPath, 'index.html')
+      if (fs.existsSync(indexFile)) return res.sendFile(indexFile)
+      next()
+    })
+  }
+} catch {}
 
 const port = Number(process.env.PORT || 8787)
 app.listen(port, () => {
